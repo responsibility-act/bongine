@@ -10,14 +10,14 @@ import (
 	"github.com/empirefox/cement/config"
 	"github.com/empirefox/cement/dbs"
 	"github.com/iris-contrib/middleware/cors"
-	"github.com/iris-contrib/middleware/loggerzap"
+	"github.com/iris-contrib/middleware/logger"
 	"github.com/iris-contrib/middleware/secure"
-	"github.com/kataras/iris"
-	"github.com/uber-go/zap"
+	"github.com/kataras/iris/v12"
+	"go.uber.org/zap"
 )
 
 type Server struct {
-	*iris.Framework
+	*iris.Application
 	config config.Config
 	logger zap.Logger
 	dbs    dbs.DBS
@@ -32,10 +32,11 @@ func NewServer(config *config.Config) (*Server, error) {
 		return nil, err
 	}
 
-	app := iris.New(config.Iris)
+	app := iris.New()
+	app.Configure(iris.WithConfiguration(config.Iris))
 
 	if config.Server.ZapIris {
-		app.Use(loggerzap.New(loggerzap.Config{
+		app.Use(logger.New(logger.Config{
 			Status: true,
 			IP:     true,
 			Method: true,
@@ -63,9 +64,9 @@ func NewServer(config *config.Config) (*Server, error) {
 			return err == nil && dbs.SiteExist(u.Host)
 		},
 	}))
-	//	app.OnError(iris.StatusBadRequest, func(ctx *iris.Context) {
-	//		ctx.Write("CUSTOM 404 NOT FOUND ERROR PAGE")
-	//		ctx.Log("http status: 400 happened!")
+	//	app.OnError(iris.StatusBadRequest, func(ctx iris.Context) {
+	//		ctx.WriteString("CUSTOM 404 NOT FOUND ERROR PAGE")
+	//		ctx.Application().Logger().Warning("http status: 400 happened!")
 	//	})
 	captcha, err := captchar.NewCaptchar(&config.Captcha)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/empirefox/cement/sms/dayu"
 	"github.com/empirefox/cement/wepay"
 	"github.com/iris-contrib/middleware/secure"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 )
 
 type Server struct {
